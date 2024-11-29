@@ -5,8 +5,7 @@
     <div class="page-title">
         <div class="row">
             <div class="col-12 col-md-6 order-md-1 order-last">
-                <h3>Student</h3>
-                <p class="text-subtitle text-muted">Data Mahasiswa Universitas Muhammadiyah Sukabumi</p>
+
             </div>
             <div class="col-12 col-md-6 order-md-2 order-first">
                 <nav aria-label="breadcrumb" class="breadcrumb-header float-start float-lg-end">
@@ -19,34 +18,86 @@
         </div>
     </div>
 
-    <section class="section">
-        <div class="card">
-            <div class="card-header d-flex justify-content-between">
-                <h5 class="card-title">jQuery Datatable</h5>
-                <button class="btn btn-success" id="addStudentBtn">Add Student</button>
-            </div>
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table" id="studentTable">
-                        <thead>
-                            <tr>
-                                <th>Photo</th>
-                                <th>Name</th>
-                                <th>NIM</th>
-                                <th>Email</th>
-                                <th>Phone</th>
-                                <th>Gender</th>
-                                <th>Birth Date</th>
-                                <th>Department</th>
-                                <th>Program</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                    </table>
+    <div class="row">
+        <div class="col-md-12">
+
+
+                <div class="card-body">
+                    <ul class="nav nav-tabs mb-4" id="myTab" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <a class="nav-link active" id="home-tab" data-bs-toggle="tab" href="#home" role="tab"
+                                aria-controls="home" aria-selected="true">Table</a>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <a class="nav-link" id="profile-tab" data-bs-toggle="tab" href="#profile" role="tab"
+                                aria-controls="profile" aria-selected="false">Card</a>
+                        </li>
+
+                    </ul>
+                    <div class="tab-content" id="myTabContent">
+                        <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
+                            <div class="card">
+                                <div class="card-header d-flex justify-content-between">
+
+                                    <h5 class="card-title">Mahasiswa</h5>
+                                    <button class="btn btn-success" id="addStudentBtn">Add Student</button>
+
+
+                            </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table" id="studentTable">
+                                            <thead>
+                                                <tr>
+                                                    <th>Photo</th>
+                                                    <th>Name</th>
+                                                    <th>NIM</th>
+                                                    <th>Email</th>
+                                                    <th>Phone</th>
+                                                    <th>Gender</th>
+                                                    <th>Birth Date</th>
+                                                    <th>Department</th>
+                                                    <th>Program</th>
+                                                    <th>Action</th>
+                                                </tr>
+                                            </thead>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab">
+                            <div class="row">
+                                @forelse($students as $student)
+                                    <div class="col-xl-3 col-md-3 col-sm-4">
+                                        <div class="card p-4">
+                                            <div class="card-content">
+                                                <img src="{{ asset('storage/' . $student->photo) }}" class="card-img-top img-fluid" alt="{{ $student->name }}">
+
+                                                <div class="card-body">
+                                                    <h5 class="card-title">{{ $student->name }}</h5>
+                                                    <p class="card-text">
+                                                        <strong>NIM:</strong> {{ $student->nim }}<br>
+                                                        <strong>Gender:</strong> {{ $student->gender }}<br>
+                                                        <strong>Program:</strong> {{ $student->program }}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @empty
+                                    <p class="text-center">No students found.</p>
+                                @endforelse
+                            </div>
+                        </div>
+
+
+                    </div>
                 </div>
-            </div>
+
         </div>
-    </section>
+    </div>
+
 
     <!-- Modal -->
     <div class="modal fade" id="studentModal" tabindex="-1" aria-labelledby="studentModalLabel" aria-hidden="true">
@@ -115,6 +166,8 @@
             </div>
         </div>
     </div>
+
+
 </div>
 @endsection
 
@@ -154,7 +207,7 @@
 
 
 
-        $('#studentForm').on('submit', function (e) {
+$('#studentForm').on('submit', function (e) {
     e.preventDefault();
 
     let formData = new FormData(this);
@@ -172,22 +225,34 @@
             // SweetAlert to show success message
             Swal.fire({
                 title: 'Success!',
-                text: response.message || 'Student added successfully!',
+                text: response.message || 'Berhasil!',
                 icon: 'success',
                 confirmButtonText: 'OK'
             });
         },
         error: function (xhr) {
+            // Jika ada error pada validasi
+            let errors = xhr.responseJSON.errors;
+
+            let errorMessage = '';
+            if (errors.nim) {
+                errorMessage += errors.nim[0] + '\n';
+            }
+            if (errors.email) {
+                errorMessage += errors.email[0] + '\n';
+            }
+
             // SweetAlert to show error message
             Swal.fire({
                 title: 'Error!',
-                text: xhr.responseJSON.message || 'Something went wrong!',
+                text: errorMessage || 'Something went wrong!',
                 icon: 'error',
                 confirmButtonText: 'Try Again'
             });
         }
     });
 });
+
 
 
 $(document).on('click', '.delete', function () {
@@ -213,7 +278,7 @@ $(document).on('click', '.delete', function () {
                 success: function (response) {
                     Swal.fire({
                         title: "Deleted!",
-                        text: "Your data has been deleted.",
+                        text: "Data berhasil di delete.",
                         icon: "success"
                     }).then(() => {
                         // Reload tabel setelah penghapusan data

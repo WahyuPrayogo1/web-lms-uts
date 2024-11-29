@@ -31,11 +31,6 @@ Route::prefix('students')->group(function () {
 });
 
 
-Route::get('Data-student', function () {
-    return view('Backend.page.student.index');
-})->name('Data-student');
-
-
 Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');

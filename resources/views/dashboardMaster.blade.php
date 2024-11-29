@@ -18,6 +18,7 @@
   <link rel="stylesheet" href="{{('backend/assets/compiled/css/table-datatable-jquery.css')}}">
   <link rel="stylesheet" href="{{('backend/assets/compiled/css/app.css')}}">
   <link rel="stylesheet" href="{{('backend/assets/compiled/css/app-dark.css')}}">
+  <link rel="stylesheet" href="{{('backend/assets/compiled/css/iconly.css')}}">
 
   <style>
     .action-icons {
@@ -97,11 +98,22 @@
             </li>
             <li
                 class="sidebar-item  ">
-                <a href="{{route('Data-student')}}" class='sidebar-link'>
+                <a href="{{route('students.index')}}" class='sidebar-link'>
                     <i class="bi bi-life-preserver"></i>
                     <span>Student</span>
                 </a>
             </li>
+            <li class="sidebar-item">
+                <a href="#" class="sidebar-link" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                    <i class="bi bi-box-arrow-right"></i>
+                    <span>Logout</span>
+                </a>
+            </li>
+            <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+                @csrf
+            </form>
+
+
         </ul>
     </div>
 </div>
@@ -117,12 +129,10 @@
 
             <footer>
                 <div class="footer clearfix mb-0 text-muted">
-                    <div class="float-start">
-                        <p>2023 &copy; Mazer</p>
-                    </div>
+
                     <div class="float-end">
-                        <p>Crafted with <span class="text-danger"><i class="bi bi-heart-fill icon-mid"></i></span>
-                            by <a href="https://saugi.me">Saugi</a></p>
+                        <p>Pembuat <span class="text-danger"><i class="bi bi-heart-fill icon-mid"></i></span>
+                            by <a href="#">Team Indekos</a></p>
                     </div>
                 </div>
             </footer>
@@ -141,6 +151,10 @@
 <script src="{{('backend/assets/extensions/datatables.net-bs5/js/dataTables.bootstrap5.min.js')}}"></script>
 <script src="{{('backend/assets/static/js/pages/datatables.js')}}"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<!-- Need: Apexcharts -->
+<script src="{{('backend/assets/extensions/apexcharts/apexcharts.min.js')}}"></script>
+<script src="{{('backend/assets/static/js/pages/dashboard.js')}}"></script>
 
 @stack('js')
 

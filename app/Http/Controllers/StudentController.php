@@ -13,7 +13,8 @@ class StudentController extends Controller
      */
     public function index()
     {
-        return view('Backend.page.student.index');
+        $students = Student::all();
+        return view('Backend.page.student.index', compact('students'));
     }
 
     public function fetch(Request $request)
@@ -22,7 +23,7 @@ class StudentController extends Controller
             $data = Student::all();
             return DataTables::of($data)
                 ->addColumn('action', function($row) {
-                    // Membungkus ikon dalam sebuah div dengan kelas 'action-icons'
+
                     return '<div class="action-icons">' .
                         '<i class="bi bi-eye text-info view" style="cursor: pointer;" data-id="'.$row->id.'" title="View Data"></i>' .
                         '<i class="bi bi-pencil text-primary edit" style="cursor: pointer;" data-id="'.$row->id.'" title="Edit"></i>' .
@@ -55,32 +56,39 @@ class StudentController extends Controller
      */
     public function store(Request $request)
     {
-        // Validasi inputan
         $data = $request->validate([
             'name' => 'required',
-            'nim' => 'required',
-            'email' => 'required|email',
+            'nim' => 'required|unique:students,nim',
+            'email' => 'required|email|unique:students,email',
             'phone' => 'required',
             'gender' => 'required',
             'birth_date' => 'required|date',
             'address' => 'required',
             'department' => 'required',
             'program' => 'required',
-            'photo' => 'nullable|image',  // Validasi foto, boleh kosong dan harus berupa gambar
+            'photo' => 'nullable|image',
+        ], [
+            'nim.unique' => 'NIM sudah terdaftar, silakan gunakan NIM lain.',
+            'email.unique' => 'Email sudah terdaftar, silakan gunakan email lain.',
+            'email.email' => 'Format email yang Anda masukkan tidak valid.',
         ]);
 
-        // Cek apakah ada file foto yang diupload
         if ($request->hasFile('photo')) {
-            // Jika ada, simpan foto dan ambil path-nya
             $data['photo'] = $request->file('photo')->store('students', 'public');
         }
 
-        // Simpan data student ke database
-        Student::create($data);
+        // Simpan data mahasiswa baru
+        $student = Student::create($data);
 
-        // Response setelah data berhasil disimpan
-        return response()->json(['message' => 'Student created successfully.']);
+        // Mengirim data mahasiswa baru dalam respons JSON
+        return response()->json([
+            'message' => 'Mahasiswa Berhasil di Tambahkan.',
+            'student' => $student,
+            'photoUrl' => asset('storage/' . $student->photo)
+        ]);
     }
+
+
 
 
     /**
@@ -108,30 +116,36 @@ class StudentController extends Controller
     {
         $student = Student::findOrFail($id);
 
+        // Validasi data, dengan pengecualian untuk nim dan email yang sudah ada
         $data = $request->validate([
             'name' => 'required',
-            'nim' => 'required',
-            'email' => 'required|email',
+            'nim' => 'required|unique:students,nim,' . $student->id,  // Pengecualian untuk nim yang sedang di-update
+            'email' => 'required|email|unique:students,email,' . $student->id,  // Pengecualian untuk email yang sedang di-update
             'phone' => 'required',
             'gender' => 'required',
             'birth_date' => 'required|date',
             'address' => 'required',
             'department' => 'required',
             'program' => 'required',
-            'photo' => 'nullable|image',
+            'photo' => 'nullable|image',  // Validasi foto
         ]);
 
+        // Jika ada foto yang diupload, hapus foto lama dan simpan foto baru
         if ($request->hasFile('photo')) {
+            // Hapus foto lama jika ada
             if ($student->photo) {
                 unlink(storage_path('app/public/' . $student->photo));
             }
+            // Simpan foto baru
             $data['photo'] = $request->file('photo')->store('students', 'public');
         }
 
+        // Update data student
         $student->update($data);
 
-        return response()->json(['message' => 'Student updated successfully.']);
+        return response()->json(['message' => 'Mahasiswa Berhasil di Update.']);
     }
+
 
     /**
      * Remove the specified resource from storage.
