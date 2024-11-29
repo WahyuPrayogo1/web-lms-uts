@@ -79,8 +79,8 @@
                         <div class="mb-3">
                             <label for="gender" class="form-label">Gender</label>
                             <select class="form-control" id="gender" name="gender" required>
-                                <option value="Male">Male</option>
-                                <option value="Female">Female</option>
+                                <option value="male">Male</option>
+                                <option value="female">Female</option>
                             </select>
                         </div>
 
@@ -141,11 +141,18 @@
         });
 
         $('#addStudentBtn').on('click', function () {
-            $('#studentForm')[0].reset();
-            $('#id').val('');
-            $('#studentModalLabel').text('Add Student');
-            $('#studentModal').modal('show');
-        });
+    $('#studentForm')[0].reset(); // Reset form
+    $('#id').val('');
+    $('#studentModalLabel').text('Add Student');
+    $('#submitBtn').show(); // Tampilkan tombol Save
+    $('#photo').prop('disabled', false); // Aktifkan kembali input file
+    $('#gender').prop('disabled', false); // Aktifkan kembali dropdown gender
+    $('#photoPreview').attr('src', '#').hide(); // Reset preview gambar
+    $('#studentModal').modal('show');
+});
+
+
+
 
         $('#studentForm').on('submit', function (e) {
     e.preventDefault();
@@ -235,30 +242,44 @@ $(document).on('click', '.delete', function () {
         url: "{{ route('students.show', '') }}/" + id,  // Mengambil data mahasiswa berdasarkan ID
         method: 'GET',
         success: function (data) {
+            // Reset form modal sebelum mengisinya
+            $('#studentForm')[0].reset();  // Reset semua field di dalam form
+            // Reset readonly dan disabled untuk semua elemen
+            $('#name').prop('readonly', false);
+            $('#nim').prop('readonly', false);
+            $('#email').prop('readonly', false);
+            $('#phone').prop('readonly', false);
+            $('#gender').prop('disabled', false); // Pastikan gender bisa diedit
+            $('#birth_date').prop('readonly', false);
+            $('#address').prop('readonly', false);
+            $('#department').prop('readonly', false);
+            $('#program').prop('readonly', false);
+            $('#photo').prop('disabled', false); // Foto bisa diubah
+
             // Mengisi form modal dengan data dari server
             $('#id').val(data.id);
             $('#name').val(data.name);
             $('#nim').val(data.nim);
             $('#email').val(data.email);
             $('#phone').val(data.phone);
-            $('#gender').val(data.gender);  // Mengatur nilai gender
+            $('#gender').val(data.gender);  // Set nilai gender
             $('#birth_date').val(data.birth_date);
             $('#address').val(data.address);
             $('#department').val(data.department);
             $('#program').val(data.program);
-            $('#gender option').each(function () {
-        if ($(this).val().toLowerCase() == data.gender.toLowerCase()) {
-            $(this).prop('selected', true);
-        }
-    });
-    if (data.photo) {
+
+            // Menampilkan foto jika ada
+            if (data.photo) {
                 $('#photoPreview').attr('src', '{{ asset('storage') }}/' + data.photo);  // Menampilkan foto yang sudah ada
                 $('#photoPreview').show();  // Menampilkan elemen gambar
             } else {
                 $('#photoPreview').hide();  // Menyembunyikan gambar jika tidak ada foto
             }
+
             // Menampilkan modal untuk edit data mahasiswa
             $('#studentModalLabel').text('Edit Student');
+            $('#submitBtn').show();  // Tampilkan tombol Save
+            $('#submitBtn').prop('disabled', false); // Pastikan tombol Save bisa diklik
             $('#studentModal').modal('show');
         },
         error: function () {
@@ -267,20 +288,22 @@ $(document).on('click', '.delete', function () {
     });
 });
 
+
+
+
 $(document).on('click', '.view', function () {
     var id = $(this).data('id');  // Ambil ID dari data-id yang ada di ikon view
 
-    // Menggunakan AJAX untuk mengambil data mahasiswa berdasarkan ID
     $.ajax({
-        url: "{{ route('students.show', '') }}/" + id,  // Pastikan sudah ada route untuk 'show'
+        url: "{{ route('students.show', '') }}/" + id,  // Mengambil data mahasiswa berdasarkan ID
         method: 'GET',
         success: function (response) {
-            // Mengisi modal dengan data mahasiswa
+            // Mengisi form modal dengan data mahasiswa
             $('#name').val(response.name).prop('readonly', true);
             $('#nim').val(response.nim).prop('readonly', true);
             $('#email').val(response.email).prop('readonly', true);
             $('#phone').val(response.phone).prop('readonly', true);
-            $('#gender').val(response.gender).prop('disabled', true);
+            $('#gender').val(response.gender).prop('disabled', true);  // Dropdown gender di-disable
             $('#birth_date').val(response.birth_date).prop('readonly', true);
             $('#address').val(response.address).prop('readonly', true);
             $('#department').val(response.department).prop('readonly', true);
@@ -289,15 +312,15 @@ $(document).on('click', '.view', function () {
             // Menampilkan foto jika ada
             if (response.photo) {
                 $('#photoPreview').attr('src', "{{ asset('storage/') }}/" + response.photo).show();
+                $('#photo').prop('disabled', true);  // Disable input file saat view
             } else {
                 $('#photoPreview').hide();
+                $('#photo').prop('disabled', true);  // Disable input file meski kosong
             }
 
-
-
             // Menampilkan modal
-            $('#studentModalLabel').text('View Student'); // Ubah judul modal menjadi 'View'
-            $('#submitBtn').hide(); // Sembunyikan tombol Save
+            $('#studentModalLabel').text('View Student');  // Ubah judul modal menjadi 'View'
+            $('#submitBtn').hide();  // Sembunyikan tombol Save
             $('#studentModal').modal('show');
         },
         error: function () {
@@ -305,6 +328,8 @@ $(document).on('click', '.view', function () {
         }
     });
 });
+
+
 
 // Untuk menambah data
 $(document).on('click', '#addStudentBtn', function () {
